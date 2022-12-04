@@ -46,7 +46,7 @@ OAI_XML_NAMESPACES = {
 }
 
 def get_list_record_chunk(resumptionToken=None, harvest_url=URL_ARXIV_OAI,
-                          metadataPrefix='arXivRaw'):
+                          metadataPrefix='arXivRaw', oai_kwargs={}):
     """
     Query OIA API for the metadata of 1000 Arxiv article
 
@@ -60,7 +60,8 @@ def get_list_record_chunk(resumptionToken=None, harvest_url=URL_ARXIV_OAI,
         record_chunks : str
             metadata of 1000 arXiv articles as an XML string
     """
-    parameters = {'verb': 'ListRecords'}
+    parameters = dict(**oai_kwargs)
+    parameters['verb'] = 'ListRecords'
 
     if resumptionToken:
         parameters['resumptionToken'] = resumptionToken
@@ -77,7 +78,7 @@ def get_list_record_chunk(resumptionToken=None, harvest_url=URL_ARXIV_OAI,
         log.info('Requested to wait, waiting {} seconds until retry...'.format(secs))
 
         time.sleep(secs)
-        return get_list_record_chunk(resumptionToken=resumptionToken)
+        return get_list_record_chunk(resumptionToken=resumptionToken, **oai_kwargs)
     else:
         raise Exception(
             'Unknown error in HTTP request {}, status code: {}'.format(
@@ -187,7 +188,10 @@ def find_default_locations():
         return fn_outfile[-1]
     return None
 
-def all_of_arxiv(outfile=None, resumptionToken=None, autoresume=True):
+def all_of_arxiv(outfile=None, 
+                resumptionToken=None, 
+                autoresume=True,
+                oai_kwargs={}):
     """
     Download the metadata for every article in the ArXiv via the OAI API
 
@@ -230,11 +234,15 @@ def all_of_arxiv(outfile=None, resumptionToken=None, autoresume=True):
             log.warn("No tokenfile found '{}'".format(tokenfile))
             log.info("Starting download from scratch...")
 
+    tmp_oai_kwargs = dict(**oai_kwargs)
     while True:
+
         log.info('Index {:4d} | Records {:7d} | resumptionToken "{}"'.format(
             chunk_index, total_records, resumptionToken)
         )
-        xml_root = ET.fromstring(get_list_record_chunk(resumptionToken))
+        xml_root = ET.fromstring(get_list_record_chunk(resumptionToken,oai_kwargs=tmp_oai_kwargs))
+        tmp_oai_kwargs = dict() # are only used once
+
         check_xml_errors(xml_root)
         records, resumptionToken = parse_xml_listrecords(xml_root)
 
