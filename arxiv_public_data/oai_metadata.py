@@ -78,7 +78,7 @@ def get_list_record_chunk(resumptionToken=None, harvest_url=URL_ARXIV_OAI,
         log.info('Requested to wait, waiting {} seconds until retry...'.format(secs))
 
         time.sleep(secs)
-        return get_list_record_chunk(resumptionToken=resumptionToken, **oai_kwargs)
+        return get_list_record_chunk(resumptionToken=resumptionToken, oai_kwargs = oai_kwargs)
     else:
         raise Exception(
             'Unknown error in HTTP request {}, status code: {}'.format(
@@ -240,7 +240,7 @@ def all_of_arxiv(outfile=None,
         log.info('Index {:4d} | Records {:7d} | resumptionToken "{}"'.format(
             chunk_index, total_records, resumptionToken)
         )
-        xml_root = ET.fromstring(get_list_record_chunk(resumptionToken,oai_kwargs=tmp_oai_kwargs))
+        xml_root = ET.fromstring(get_list_record_chunk(resumptionToken, oai_kwargs=tmp_oai_kwargs))
         tmp_oai_kwargs = dict() # are only used once
 
         check_xml_errors(xml_root)
