@@ -32,8 +32,6 @@ ELMO_MODULE_KWARGS = dict(trainable=True)
 ELMO_DICTKEY = 'default'
 
 DIR_EMBEDDING = os.path.join(DIR_OUTPUT, 'embeddings')
-if not os.path.exists(DIR_EMBEDDING):
-    os.mkdir(DIR_EMBEDDING)
 
 def elmo_strings(batches, filename, batchsize=32):
     """
